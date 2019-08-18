@@ -1,0 +1,28 @@
+version: "3.7"
+services:
+  rails:
+    build:
+      context: .
+    stdin_open: true
+    tty: true
+    volumes:
+      - "./rails/.:/rails"
+      - bundle:/bundle
+    environment:
+      MYSQL_HOST: mysql
+    depends_on:
+      - mysql
+      - postgresql
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+  postgresql:
+    image: postgres:11
+    volumes:
+      - ./postgresql:/docker-entrypoint-initdb.d
+volumes:
+  bundle:
