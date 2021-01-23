@@ -5,7 +5,7 @@ usage:
 	@echo "Available targets:"
 	@echo "  * build               - Builds image"
 	@echo "  * bundle              - Runs bundle install"
-	@echo "  * test GEM=gem        - Runs tests for given GEM"
+	@echo "  * test F=file         - Runs tests for the given file(F)"
 	@echo "  * ar CONN=adapter     - Runs tests for Active Record with given adapter"
 	@echo "  * dev                 - Opens an ash session in the container"
 	@echo "  * down                - Removes all the containers"
@@ -26,9 +26,17 @@ down:
 tear-down:
 	$(call DC, down -v --rmi all --remove-orphans)
 
+GEM_NAME=$(firstword $(subst /, ,$(F)))
+TEST_FILE=$(subst $(GEM_NAME)/,,$(F))
+ifeq ($(GEM_NAME),$(TEST_FILE))
+	TEST_FILE=
+else
+	TEST_FILE:="TEST=$(TEST_FILE)"
+endif
+
 .PHONY: test
 test:
-	@$(eval TEST_COMMAND := $(if $(GEM),"cd $(GEM) && bundle exec rake test","bundle exec rake test"))
+	@$(eval TEST_COMMAND := $(if $(GEM_NAME),"cd $(GEM_NAME) && bundle exec rake test $(TEST_FILE)","bundle exec rake test"))
 	$(call DC-RUN, ash -c $(TEST_COMMAND))
 
 .PHONY: ar
